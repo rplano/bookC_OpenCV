@@ -112,7 +112,7 @@ src.copyTo(dst);
     let Module = {
       locateFile: function (path, prefix) {
         if (path.endsWith(".wasm")) {
-          return "" + path;
+          return "http://127.0.0.1:9080/OpenCV_JS/" + path;
         }
         return prefix + path;
       },
@@ -124,7 +124,7 @@ src.copyTo(dst);
       }
     };
   </script>
-  <script async src="opencv.js"></script>
+  <script async src="http://127.0.0.1:9080/OpenCV_JS/opencv.js"></script>
 
   <!-- App Logic -->
   <script>
@@ -164,15 +164,21 @@ src.copyTo(dst);
       }
     }
 
-    function updateProcessing() {
-      const code = document.getElementById("codeEditor").value;
-      try {
-        userCode = new Function("src", "dst", code);
-        console.log("✅ Code updated");
-      } catch (err) {
-        console.error("❌ Code error:", err);
-      }
+function updateProcessing() {
+  const code = document.getElementById("codeEditor").value;
+  try {
+    userCode = new Function("src", "dst", code);
+    console.log("✅ Code updated");
+
+    // 💡 Re-run the code if we're in image mode
+    if (mode === 'image' && uploadedImage.complete && uploadedImage.naturalWidth > 0) {
+      processFrame(uploadedImage);
     }
+  } catch (err) {
+    console.error("❌ Code error:", err);
+  }
+}
+
 
     function processLoop() {
       if (!opencvReady || !userCode) return;
@@ -246,4 +252,3 @@ if (captureRequested) {
   </script>
 </body>
 </html>
-
