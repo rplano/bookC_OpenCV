@@ -91,17 +91,17 @@ src.copyTo(dst);
 //cv.line(dst, new cv.Point(0, 0), new cv.Point(dst.cols, dst.rows), new cv.Scalar(255, 0, 0, 255), 4);
 
 // background subtraction
-dst.create(src.rows, src.cols, src.type());
-if (backgroundMat !== null) {
-  let diff = new cv.Mat();
-  cv.absdiff(src, backgroundMat, diff);
-  cv.cvtColor(diff, dst, cv.COLOR_RGBA2GRAY);
-  cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA);
-  //cv.convertScaleAbs(diff, dst, 5.0); // Multiplies differences
-  diff.delete();
-} else {
-  src.copyTo(dst);
-}
+//dst.create(src.rows, src.cols, src.type());
+//if (backgroundMat !== null) {
+//  let diff = new cv.Mat();
+//  cv.absdiff(src, backgroundMat, diff);
+//  cv.cvtColor(diff, dst, cv.COLOR_RGBA2GRAY);
+//  cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA);
+//  //cv.convertScaleAbs(diff, dst, 5.0); // Multiplies differences
+//  diff.delete();
+//} else {
+//  src.copyTo(dst);
+//}
 
   </textarea>
   <button onclick="updateProcessing()">▶ Run</button>
