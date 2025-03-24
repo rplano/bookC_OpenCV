@@ -112,7 +112,7 @@ if (backgroundMat !== null) {
     let Module = {
       locateFile: function (path, prefix) {
         if (path.endsWith(".wasm")) {
-          return "http://127.0.0.1:9080/OpenCV_JS/" + path;
+          return "/" + path;
         }
         return prefix + path;
       },
