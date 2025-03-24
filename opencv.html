@@ -112,7 +112,7 @@ if (backgroundMat !== null) {
     let Module = {
       locateFile: function (path, prefix) {
         if (path.endsWith(".wasm")) {
-          return "/" + path;
+          return "bookC_OpenCV/" + path;
         }
         return prefix + path;
       },
