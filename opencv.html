@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>OpenCV.js Live Processing – Webcam + Image Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
@@ -29,6 +30,13 @@
     #video, #inputCanvas {
       display: none;
     }
+ @media (max-width: 600px) {
+  textarea {
+    width: 95%;
+    height: 120px;
+    font-size: 13px;
+  }
+ }
   </style>
 </head>
 <body>
