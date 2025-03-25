@@ -19,7 +19,7 @@
     }
     textarea {
       width: 80%;
-      height: 150px;
+      height: 250px;
       font-family: monospace;
     }
     button, input[type="file"] {
@@ -110,8 +110,7 @@ src.copyTo(dst);
 //} else {
 //  src.copyTo(dst);
 //}
-
-  </textarea>
+</textarea>
   <button onclick="updateProcessing()">▶ Run</button>
   <button onclick="captureBackground()">📸 Capture Background</button>
 
@@ -148,6 +147,7 @@ src.copyTo(dst);
     let userCode = null;
     let mode = 'webcam'; // 'webcam' or 'image'
     let backgroundMat = null;
+    let prevFrame = null;
     let captureRequested = false;
 
     // === Webcam Setup ===
@@ -175,7 +175,8 @@ src.copyTo(dst);
 function updateProcessing() {
   const code = document.getElementById("codeEditor").value;
   try {
-    userCode = new Function("src", "dst", code);
+    //userCode = new Function("src", "dst", code);
+    userCode = new Function("src", "dst", "prev", code);
     console.log("✅ Code updated");
 
     // 💡 Re-run the code if we're in image mode
@@ -212,6 +213,40 @@ if (captureRequested) {
   captureRequested = false;
 }
 
+    // ✅ Run user code: pass src, dst, and prev
+    userCode(src, dst, prevFrame);
+
+    // ✅ Display result
+    if (dst.rows > 0 && dst.cols > 0) {
+      cv.imshow(outputCanvas, dst);
+    }
+
+    // ✅ Update prevFrame
+    if (prevFrame) prevFrame.delete();
+    prevFrame = src.clone(); // store a deep copy of current src
+
+    dst.delete();
+    src.delete(); // clean up after copying
+  } catch (err) {
+    console.error("❌ Processing error:", err);
+  }
+}
+
+/*
+function processFrame(sourceElement) {
+  try {
+    let src = cv.imread(sourceElement);
+    let dst = new cv.Mat();
+
+    // ✅ Capture background if requested
+if (captureRequested) {
+  if (backgroundMat) backgroundMat.delete();
+  backgroundMat = new cv.Mat();
+  src.copyTo(backgroundMat);
+  console.log("✅ Background captured:", backgroundMat.rows, "x", backgroundMat.cols, "type:", backgroundMat.type());
+  captureRequested = false;
+}
+
     // Run user code from textarea
     userCode(src, dst);
 
@@ -225,7 +260,7 @@ if (captureRequested) {
     console.error("❌ Processing error:", err);
   }
 }
-
+*/
     // === Mode Switching ===
     function setMode(selectedMode) {
       mode = selectedMode;
