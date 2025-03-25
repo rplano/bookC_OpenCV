@@ -30,18 +30,18 @@
     #video, #inputCanvas {
       display: none;
     }
- @media (max-width: 600px) {
-  textarea {
-    width: 95%;
-    height: 120px;
-    font-size: 13px;
-  }
- }
+    @media (max-width: 600px) {
+      textarea {
+        width: 95%;
+        height: 120px;
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>OpenCV.js – Live Webcam + Image Upload</h1>
-<p>Needs to run on a local server, get opencv.wasm from https://github.com/opencv-js/wasm</p>
+  <p>Needs to run on a local server, get opencv.wasm from https://github.com/opencv-js/wasm</p>
   <p id="status">⏳ Loading OpenCV...</p>
 
   <!-- Mode Selection -->
@@ -135,42 +135,49 @@ src.copyTo(dst);
 
   <!-- App Logic -->
   <script>
-    let video = document.getElementById("video");
-    let inputCanvas = document.getElementById("inputCanvas");
-    let inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
-    let outputCanvas = document.getElementById("outputCanvas");
-    let uploadedImage = document.getElementById("uploadedImage");
-    let imageLoader = document.getElementById("imageLoader");
+// opencv.html
+// 005: cleaned up a little
+// 004: has prev frame
+// 003: 
+// 002: works on images
+// 001: based on index_005.html
+let video = document.getElementById("video");
+let inputCanvas = document.getElementById("inputCanvas");
+let inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
+let outputCanvas = document.getElementById("outputCanvas");
+let uploadedImage = document.getElementById("uploadedImage");
+let imageLoader = document.getElementById("imageLoader");
 
-    let opencvReady = false;
-    let streaming = false;
-    let userCode = null;
-    let mode = 'webcam'; // 'webcam' or 'image'
-    let backgroundMat = null;
-    let prevFrame = null;
-    let captureRequested = false;
+let opencvReady = false;
+let streaming = false;
+let userCode = null;
+let mode = "webcam"; // 'webcam' or 'image'
+let backgroundMat = null;
+let prevFrame = null;
+let captureRequested = false;
 
-    // === Webcam Setup ===
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then(stream => {
-        video.srcObject = stream;
-        video.play();
-      })
-      .catch(err => console.error("❌ Webcam error:", err));
+// === Webcam Setup ===
+navigator.mediaDevices
+  .getUserMedia({ video: true, audio: false })
+  .then((stream) => {
+    video.srcObject = stream;
+    video.play();
+  })
+  .catch((err) => console.error("❌ Webcam error:", err));
 
-    video.addEventListener("canplay", () => {
-      if (!streaming) {
-        streaming = true;
-        maybeStart();
-      }
-    });
+video.addEventListener("canplay", () => {
+  if (!streaming) {
+    streaming = true;
+    maybeStart();
+  }
+});
 
-    function maybeStart() {
-      if (opencvReady && streaming) {
-        updateProcessing();
-        requestAnimationFrame(processLoop);
-      }
-    }
+function maybeStart() {
+  if (opencvReady && streaming) {
+    updateProcessing();
+    requestAnimationFrame(processLoop);
+  }
+}
 
 function updateProcessing() {
   const code = document.getElementById("codeEditor").value;
@@ -180,7 +187,11 @@ function updateProcessing() {
     console.log("✅ Code updated");
 
     // 💡 Re-run the code if we're in image mode
-    if (mode === 'image' && uploadedImage.complete && uploadedImage.naturalWidth > 0) {
+    if (
+      mode === "image" &&
+      uploadedImage.complete &&
+      uploadedImage.naturalWidth > 0
+    ) {
       processFrame(uploadedImage);
     }
   } catch (err) {
@@ -188,16 +199,15 @@ function updateProcessing() {
   }
 }
 
+function processLoop() {
+  if (!opencvReady || !userCode) return;
 
-    function processLoop() {
-      if (!opencvReady || !userCode) return;
-
-      if (mode === 'webcam') {
-        inputCtx.drawImage(video, 0, 0, inputCanvas.width, inputCanvas.height);
-        processFrame(inputCanvas);
-        requestAnimationFrame(processLoop); // Loop only in webcam mode
-      }
-    }
+  if (mode === "webcam") {
+    inputCtx.drawImage(video, 0, 0, inputCanvas.width, inputCanvas.height);
+    processFrame(inputCanvas);
+    requestAnimationFrame(processLoop); // Loop only in webcam mode
+  }
+}
 
 function processFrame(sourceElement) {
   try {
@@ -205,13 +215,20 @@ function processFrame(sourceElement) {
     let dst = new cv.Mat();
 
     // ✅ Capture background if requested
-if (captureRequested) {
-  if (backgroundMat) backgroundMat.delete();
-  backgroundMat = new cv.Mat();
-  src.copyTo(backgroundMat);
-  console.log("✅ Background captured:", backgroundMat.rows, "x", backgroundMat.cols, "type:", backgroundMat.type());
-  captureRequested = false;
-}
+    if (captureRequested) {
+      if (backgroundMat) backgroundMat.delete();
+      backgroundMat = new cv.Mat();
+      src.copyTo(backgroundMat);
+      console.log(
+        "✅ Background captured:",
+        backgroundMat.rows,
+        "x",
+        backgroundMat.cols,
+        "type:",
+        backgroundMat.type()
+      );
+      captureRequested = false;
+    }
 
     // ✅ Run user code: pass src, dst, and prev
     userCode(src, dst, prevFrame);
@@ -232,66 +249,37 @@ if (captureRequested) {
   }
 }
 
-/*
-function processFrame(sourceElement) {
-  try {
-    let src = cv.imread(sourceElement);
-    let dst = new cv.Mat();
-
-    // ✅ Capture background if requested
-if (captureRequested) {
-  if (backgroundMat) backgroundMat.delete();
-  backgroundMat = new cv.Mat();
-  src.copyTo(backgroundMat);
-  console.log("✅ Background captured:", backgroundMat.rows, "x", backgroundMat.cols, "type:", backgroundMat.type());
-  captureRequested = false;
-}
-
-    // Run user code from textarea
-    userCode(src, dst);
-
-    if (dst.rows > 0 && dst.cols > 0) {
-      cv.imshow(outputCanvas, dst);
-    }
-
-    src.delete();
-    dst.delete();
-  } catch (err) {
-    console.error("❌ Processing error:", err);
+// === Mode Switching ===
+function setMode(selectedMode) {
+  mode = selectedMode;
+  if (mode === "webcam") {
+    document.getElementById("imageLoader").style.display = "none";
+    uploadedImage.style.display = "none";
+    requestAnimationFrame(processLoop);
+  } else {
+    document.getElementById("imageLoader").style.display = "inline-block";
   }
 }
-*/
-    // === Mode Switching ===
-    function setMode(selectedMode) {
-      mode = selectedMode;
-      if (mode === 'webcam') {
-        document.getElementById("imageLoader").style.display = "none";
-        uploadedImage.style.display = "none";
-        requestAnimationFrame(processLoop);
-      } else {
-        document.getElementById("imageLoader").style.display = "inline-block";
-      }
-    }
 
-    function captureBackground() {
-      captureRequested = true;
-    }
+function captureBackground() {
+  captureRequested = true;
+}
 
-    // === Image Upload Handling ===
-    imageLoader.addEventListener("change", function (e) {
-      let file = e.target.files[0];
-      if (!file) return;
+// === Image Upload Handling ===
+imageLoader.addEventListener("change", function (e) {
+  let file = e.target.files[0];
+  if (!file) return;
 
-      let reader = new FileReader();
-      reader.onload = function (event) {
-        uploadedImage.src = event.target.result;
-        uploadedImage.onload = function () {
-          processFrame(uploadedImage); // Run OpenCV when image is loaded
-        };
-        uploadedImage.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
+  let reader = new FileReader();
+  reader.onload = function (event) {
+    uploadedImage.src = event.target.result;
+    uploadedImage.onload = function () {
+      processFrame(uploadedImage); // Run OpenCV when image is loaded
+    };
+    uploadedImage.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
   </script>
 </body>
 </html>
