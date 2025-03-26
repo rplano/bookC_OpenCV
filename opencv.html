@@ -128,6 +128,7 @@ src.copyTo(dst);
         document.getElementById("status").innerText = "✅ OpenCV is ready!";
         opencvReady = true;
         maybeStart();
+        enableClickLogging();
       }
     };
   </script>
@@ -136,6 +137,7 @@ src.copyTo(dst);
   <!-- App Logic -->
   <script>
 // opencv.html
+// 006: added enableClickLogging()
 // 005: cleaned up a little
 // 004: has prev frame
 // 003: 
@@ -263,6 +265,30 @@ function setMode(selectedMode) {
 
 function captureBackground() {
   captureRequested = true;
+}
+
+function enableClickLogging() {
+  const output = document.getElementById("outputCanvas");
+  const image = document.getElementById("uploadedImage");
+
+  function logClick(event, sourceElement) {
+    const rect = sourceElement.getBoundingClientRect();
+    const x = Math.round((event.clientX - rect.left) * sourceElement.width / rect.width);
+    const y = Math.round((event.clientY - rect.top) * sourceElement.height / rect.height);
+    console.log(`🖱️ Clicked at x: ${x}, y: ${y}`);
+  }
+
+  output.addEventListener("click", (e) => {
+    if (mode === "webcam") {
+      logClick(e, output); // use outputCanvas dimensions
+    }
+  });
+
+  image.addEventListener("click", (e) => {
+    if (mode === "image") {
+      logClick(e, image);
+    }
+  });
 }
 
 // === Image Upload Handling ===
